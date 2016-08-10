@@ -202,7 +202,7 @@ function initialize(env, user, options) {
   if (typeof options.bootstrap === 'object') {
     // Emitting the event here will happen before the consumer
     // can register a listener, so defer to next tick.
-    setTimeout(function() { emitter.emit(readyEvent); }, 0);
+    setTimeout(function() { emitter.emit(readyEvent, options.bootstrap); }, 0);
   } 
   else if (typeof(options.bootstrap) === 'string' && options.bootstrap.toUpperCase() === 'LOCALSTORAGE' && typeof(Storage) !== 'undefined') {
     useLocalStorage = true;
@@ -212,13 +212,13 @@ function initialize(env, user, options) {
       requestor.fetchFlagSettings(ident.getUser(), hash, function(err, settings) {
         flags = settings;
         localStorage.setItem(lsKey(environment, ident.getUser()), JSON.stringify(flags));
-        emitter.emit(readyEvent);
+        emitter.emit(readyEvent, settings);
       });
     } else {
       // We're reading the flags from local storage. Signal that we're ready,
       // then update localStorage for the next page load. We won't signal changes or update
       // the in-memory flags unless you subscribe for changes
-      setTimeout(function() { emitter.emit(readyEvent); }, 0);
+      setTimeout(function() { emitter.emit(readyEvent, settings); }, 0);
       requestor.fetchFlagSettings(ident.getUser(), hash, function(err, settings) {
         localStorage.setItem(lsKey(environment, ident.getUser()), JSON.stringify(settings));
       });
@@ -227,7 +227,7 @@ function initialize(env, user, options) {
   else {
     requestor.fetchFlagSettings(ident.getUser(), hash, function(err, settings) {
       flags = settings;
-      emitter.emit(readyEvent);
+      emitter.emit(readyEvent, settings);
     });
   }
   
